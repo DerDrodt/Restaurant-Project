@@ -10,6 +10,7 @@ var markers = []
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
+  window.onresize = changeTabOrder;
 });
 
 /**
@@ -130,6 +131,7 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
     ul.append(createRestaurantHTML(restaurant));
   });
   addMarkersToMap();
+  changeTabOrder();
 }
 
 /**
@@ -137,28 +139,40 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
  */
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
+  li.className = 'restaurants-list__item';
 
   const image = document.createElement('img');
-  image.className = 'restaurant-img';
+  image.className = 'restaurant-list__item-image';
+  image.alt = restaurant.name;
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
   li.append(image);
 
+  const wrapper = document.createElement('div');
+  wrapper.className = 'restaurant-list-content';
+  li.append(wrapper);
+
+  const inner = document.createElement('div');
+  inner.className = 'restaurant-list-detail';
+  wrapper.append(inner);
+
   const name = document.createElement('h1');
   name.innerHTML = restaurant.name;
-  li.append(name);
+  name.id = `restaurant-list__item__heading__${restaurant.id}`;
+  inner.append(name);
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
-  li.append(neighborhood);
+  inner.append(neighborhood);
 
   const address = document.createElement('p');
   address.innerHTML = restaurant.address;
-  li.append(address);
+  inner.append(address);
 
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
+  more.setAttribute('aria-labelledby', name.id);
   more.href = DBHelper.urlForRestaurant(restaurant);
-  li.append(more)
+  wrapper.append(more)
 
   return li
 }
@@ -175,4 +189,13 @@ addMarkersToMap = (restaurants = self.restaurants) => {
     });
     self.markers.push(marker);
   });
+}
+
+changeTabOrder = () => {
+  const width = window.innerWidth;
+
+  if(width >= 750) {
+    const focus = document.querySelectorAll('#content [href], #content select, header nav a');
+    focus.forEach(elem => elem.setAttribute('tabindex', 100));
+  }
 }
