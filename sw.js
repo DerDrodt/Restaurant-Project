@@ -1,4 +1,4 @@
-const STATIC_CACHE_NAME = 'restaurant-static-v3';
+const STATIC_CACHE_NAME = 'restaurant-static-v6';
 const IMG_CACHE_NAME = 'restaurant-img-v2';
 const allCaches = [STATIC_CACHE_NAME/*, IMG_CACHE_NAME*/];
 
@@ -8,11 +8,10 @@ self.addEventListener('install', e => {
             return cache.addAll([
                 'index.html',
                 'restaurant.html',
-                'js/main.js',
-                'js/dbhelper.js',
-                'js/restaurant_info.js',
-                'data/restaurants.json',
-                'css/styles.css'
+                'dist/js/main.js',
+                'dist/js/dbhelper.js',
+                'dist/js/restaurant_info.js',
+                'dist/css/styles.css'
             ]);
         })
     );
@@ -35,27 +34,34 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', e => {
-    if(e.request.url.indexOf('/restaurant.html?id=') !== -1) {
-        e.respondWith(
-            caches.open(STATIC_CACHE_NAME).then(cache => {
-                return cache.match('restaurant.html').then(res => {
-                    return res;
-                });
-            })
-        )
-        return;
+    const { request } = e;
+    let { url } = request;
+
+    if (url.indexOf('/restaurant.html?id=') !== -1) {
+        url = 'restaurant.html';
+    }
+
+    if (new URL(url).pathname === '/')
+        url = 'index.html';
+
+    if (url.startsWith('https://maps')) {
+        request.mode = 'cors';
+        request.headers = new Headers({
+            'Access-Control-Allow-Origin':'*'
+        });
     }
 
     e.respondWith(
         caches.open(STATIC_CACHE_NAME).then(cache => {
-            return cache.match(e.request.url)
+            return cache.match(url)
                 .then(res => {
                     if (res) return res;
 
-                    return fetch(e.request).then(networkResponse => {
-                        cache.put(e.request.url, networkResponse.clone());
+                    return fetch(request.url).then(networkResponse => {
+                        cache.put(url, networkResponse.clone());
                         return networkResponse;
                     })
+                        .catch(err => console.error(err, url))
                 })
         }))
 });
