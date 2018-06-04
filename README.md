@@ -1,3 +1,7 @@
+# Notes
+- The current project version (stage 2) assumes a running server as given for stage 2.
+- A lighthouse report that shows that all lighthosue metrcis were met is given at lighthouse.json
+
 # Mobile Web Specialist Certification Course
 ---
 #### _Three Stage Course Material Project - Restaurant Reviews_
